@@ -16,6 +16,7 @@
   "dependencies": {
     "@ipld/dag-pb": "^2.1.16",
     "@truffle/contract": "^4.4.1",
+    "abi-decoder": "^2.4.0",
     "axios": "^0.27.2",
     "bcrypt": "^5.0.1",
     "compression": "^1.7.4",
@@ -29,6 +30,7 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^4.2.2",
     "mongoose": "^6.4.4",
+    "mongoose-auto-increment": "^5.0.1",
     "multiformats": "^9.6.5",
     "nodemon": "^2.0.15",
     "passport": "^0.6.0",

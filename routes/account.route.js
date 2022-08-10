@@ -1,14 +1,17 @@
-const express = require('express');
-const router = express.Router();
-const accountCtrl = require('../controllers/account.controller.js');
+const express = require('express')
+const router = express.Router()
+const accountCtrl = require('../controllers/account.controller.js')
 
-router.route('/saveAccount')
-    .post(accountCtrl.saveAccount);
+router.route('/getAccounts').post(accountCtrl.getAccounts)
 
-router.route('/getAbiFromAddress')
-    .post(accountCtrl.getAbiFromAddress);
+router.route('/saveAccount').post(accountCtrl.saveAccount)
 
-router.route('/mintDataSave')
-    .post(accountCtrl.mintDataSave);
+router.route('/removeAccount').post(accountCtrl.removeAccount)
 
-module.exports = router;
+router.route('/removeAll').post(accountCtrl.removeAll)
+
+router.route('/getAbiFromAddress').post(accountCtrl.getAbiFromAddress)
+
+router.route('/mintDataSave').post(accountCtrl.mintDataSave)
+
+module.exports = router

@@ -14,11 +14,16 @@ require('./config/passport')
 // Import routes
 const authRouter = require('./routes/auth.route')
 const accountRouter = require('./routes/account.route')
+const userRouter = require('./routes/user.route')
 
 const app = express()
 app.use(express.static(path.join(__dirname, 'build')))
 
-app.use(cors())
+app.use(
+  cors({
+    origin: '*',
+  }),
+)
 app.use(helmet())
 app.use(compression())
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -28,9 +33,11 @@ app.use(passport.initialize())
 // Implement route
 app.use('/auth', authRouter)
 app.use('/nfttrading', accountRouter)
+app.use('/user', userRouter)
 
 // Implement 500 error route
 app.use(function (err, req, res, next) {
+  console.log(err)
   res.status(500).send('Something is broken.')
 })
 
