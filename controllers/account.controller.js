@@ -20,16 +20,11 @@ const saveAccount = (req, res, next) => {
   User.findOne({ _id })
     .then((user) => {
       if (user.accounts) {
-        console.log(user.accounts)
-        if (user.accounts.length >= 5)
-          res.status(400).send({ message: 'Cannot set accounts over 5!' })
-        else {
-          user.accounts.push(privateKey)
-          user
-            .save()
-            .then((usr) => res.json({ success: usr }))
-            .catch(next)
-        }
+        user.accounts.push(privateKey)
+        user
+          .save()
+          .then((usr) => res.json({ success: usr }))
+          .catch(next)
       }
     })
     .catch(next)
