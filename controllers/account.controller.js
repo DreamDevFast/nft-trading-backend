@@ -71,7 +71,7 @@ const removeAll = (req, res, next) => {
 
 const getAbiFromAddress = (req, res, next) => {
   let address = req.body.address
-  let api_req = `https://api.etherscan.io/api?module=contract&action=getabi&address=${address}&apikey=3P53WGBY952N2TCWS3JEN819IQVXN5BMP2`
+  let api_req = `https://api-kovan.etherscan.io/api?module=contract&action=getabi&address=${address}&apikey=3P53WGBY952N2TCWS3JEN819IQVXN5BMP2`
   axois
     .get(api_req)
     .then((response) => {
