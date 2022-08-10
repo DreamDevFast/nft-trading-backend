@@ -1,8 +1,5 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
-const autoIncrement = require('mongoose-auto-increment')
-
-autoIncrement.initialize(mongoose.connection)
 
 const UserSchema = new Schema({
   username: {
@@ -43,5 +40,4 @@ UserSchema.statics = {
   },
 }
 
-UserSchema.plugin(autoIncrement.plugin, 'users')
 module.exports = User = mongoose.model('users', UserSchema)

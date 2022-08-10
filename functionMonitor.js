@@ -56,9 +56,6 @@ const initFunctionMonitor = (transactions) => {
                     trans.status = 'send complete'
                     trans.transactionHash = hash.toString()
                     await trans.save()
-                    transactions = transactions.filter(
-                      (tx) => tx._id !== trans._id,
-                    )
                   } else {
                     console.log(
                       'Something went wrong when submitting your transaction.\n' +
@@ -68,11 +65,9 @@ const initFunctionMonitor = (transactions) => {
                     trans.status = 'send error'
                     trans.transactionHash = err.toString()
                     await trans.save()
-                    transactions = transactions.filter(
-                      (tx) => tx._id !== trans._id,
-                    )
                   }
                 })
+                transactions = transactions.filter((tx) => tx._id !== trans._id)
               }),
             )
           }

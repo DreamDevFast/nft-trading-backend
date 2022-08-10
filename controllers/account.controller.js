@@ -2,9 +2,10 @@ const User = require('../models/user.model')
 const Transaction = require('../models/transaction.model')
 const axois = require('axios')
 const { initFunctionMonitor } = require('../functionMonitor')
+const mongoose = require('mongoose')
 
 const getAccounts = (req, res, next) => {
-  const _id = req.body._id
+  const _id = mongoose.Types.ObjectId(req.body._id)
 
   User.findOne({ _id })
     .then((user) => {
@@ -14,7 +15,7 @@ const getAccounts = (req, res, next) => {
 }
 
 const saveAccount = (req, res, next) => {
-  let _id = req.body._id
+  let _id = mongoose.Types.ObjectId(req.body._id)
   let privateKey = req.body.privateKey
   User.findOne({ _id })
     .then((user) => {
@@ -35,7 +36,7 @@ const saveAccount = (req, res, next) => {
 }
 
 const removeAccount = (req, res, next) => {
-  let _id = req.body._id
+  let _id = mongoose.Types.ObjectId(req.body._id)
   let privateKey = req.body.privateKey
   User.findOne({ _id })
     .then((user) => {
@@ -56,7 +57,7 @@ const removeAccount = (req, res, next) => {
 }
 
 const removeAll = (req, res, next) => {
-  let _id = req.body._id
+  let _id = mongoose.Types.ObjectId(req.body._id)
   console.log(_id)
   User.findOne({ _id })
     .then((user) => {
@@ -106,11 +107,10 @@ const mintDataSave = (req, res, next) => {
           })
           .catch(next)
       } else {
-        console.log('Hi')
         let transaction
         if (monitorMethod === 'time') {
           transaction = new Transaction({
-            userId: _id,
+            userId: mongoose.Types.ObjectId(_id),
             account,
             time: new Date(time),
             rawTransaction,
@@ -119,7 +119,7 @@ const mintDataSave = (req, res, next) => {
           })
         } else {
           transaction = new Transaction({
-            userId: _id,
+            userId: mongoose.Types.ObjectId(_id),
             account,
             time: new Date(time),
             rawTransaction,
@@ -128,7 +128,6 @@ const mintDataSave = (req, res, next) => {
             monitorFunction,
           })
         }
-        console.log('Hi again')
         transaction
           .save()
           .then((trans) => {

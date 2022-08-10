@@ -3,7 +3,7 @@ const Schema = mongoose.Schema
 
 const TransactionSchema = new Schema({
   userId: {
-    type: Number,
+    type: Schema.Types.ObjectId,
     required: true,
   },
   account: {
