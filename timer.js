@@ -15,7 +15,7 @@ function sendValidableTransaction() {
       $lte: new Date(currentTime + 10 * 1000),
     },
     status: 'pending',
-    monitorMethod: 'timer',
+    monitorMethod: 'time',
   }).then((trans) => {
     for (let i = 0; i < trans.length; i++) {
       let rawTransaction = trans[i].rawTransaction

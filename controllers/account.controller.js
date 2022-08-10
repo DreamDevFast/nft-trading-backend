@@ -92,13 +92,25 @@ const mintDataSave = (req, res, next) => {
     monitorFunction,
   } = req.body
 
-  Transaction.findOne({ rawTransaction })
+  Transaction.findOne({ rawTransaction, monitorMethod })
     .then((trans) => {
       if (trans) {
-        Transaction.find({ monitorMethod: 'function', status: 'pending' })
-          .then((transactions) => {
-            initFunctionMonitor(transactions)
-            res.json({ message: 'That transaction is already exists!' })
+        trans.time = new Date(time)
+        trans.monitorFunction = monitorFunction
+        trans.monitorMethod = monitorMethod
+        trans
+          .save()
+          .then((tx) => {
+            if (tx.monitorMethod === 'function') {
+              Transaction.find({ monitorMethod: 'function', status: 'pending' })
+                .then((transactions) => {
+                  initFunctionMonitor(transactions)
+                  res.json({ success: trans })
+                })
+                .catch(next)
+            } else {
+              res.json({ success: tx })
+            }
           })
           .catch(next)
       } else {
