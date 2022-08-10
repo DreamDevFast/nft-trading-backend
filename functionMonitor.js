@@ -16,7 +16,7 @@ const initFunctionMonitor = (transactions) => {
             transactions.filter(async (trans) => {
               if (trans.account !== transaction.to) return false
               let address = trans.account
-              let api_req = `https://api.etherscan.io/api?module=contract&action=getabi&address=${address}&apikey=3P53WGBY952N2TCWS3JEN819IQVXN5BMP2`
+              let api_req = `https://api-kovan.etherscan.io/api?module=contract&action=getabi&address=${address}&apikey=3P53WGBY952N2TCWS3JEN819IQVXN5BMP2`
               try {
                 const response = await axois.get(api_req)
                 if (response.data.message === 'OK') {
