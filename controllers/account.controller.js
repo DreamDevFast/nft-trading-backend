@@ -86,74 +86,72 @@ const mintDataSave = (req, res, next) => {
   let {
     _id,
     account,
+    privateKey,
+    gasLimit,
+    maxPriorityFeePerGas,
+    value,
+    data,
     time,
-    rawTransaction,
+    to,
     monitorMethod,
     monitorFunction,
   } = req.body
 
-  Transaction.findOne({ rawTransaction, monitorMethod })
+  let transaction
+  if (monitorMethod === 'time') {
+    transaction = new Transaction({
+      userId: mongoose.Types.ObjectId(_id),
+      account,
+      privateKey,
+      gasLimit,
+      maxPriorityFeePerGas,
+      value,
+      data,
+      to,
+      time: new Date(time),
+      status: 'pending',
+      monitorMethod,
+    })
+  } else {
+    transaction = new Transaction({
+      userId: mongoose.Types.ObjectId(_id),
+      account,
+      privateKey,
+      gasLimit,
+      maxPriorityFeePerGas,
+      value,
+      data,
+      to,
+      time: new Date(time),
+      status: 'pending',
+      monitorMethod,
+      monitorFunction,
+    })
+  }
+  transaction
+    .save()
     .then((trans) => {
-      if (trans) {
-        trans.time = new Date(time)
-        trans.monitorFunction = monitorFunction
-        trans.monitorMethod = monitorMethod
-        trans
-          .save()
-          .then((tx) => {
-            if (tx.monitorMethod === 'function') {
-              Transaction.find({ monitorMethod: 'function', status: 'pending' })
-                .then((transactions) => {
-                  initFunctionMonitor(transactions)
-                  res.json({ success: trans })
-                })
-                .catch(next)
-            } else {
-              res.json({ success: tx })
-            }
-          })
-          .catch(next)
-      } else {
-        let transaction
-        if (monitorMethod === 'time') {
-          transaction = new Transaction({
-            userId: mongoose.Types.ObjectId(_id),
-            account,
-            time: new Date(time),
-            rawTransaction,
-            status: 'pending',
-            monitorMethod,
-          })
-        } else {
-          transaction = new Transaction({
-            userId: mongoose.Types.ObjectId(_id),
-            account,
-            time: new Date(time),
-            rawTransaction,
-            status: 'pending',
-            monitorMethod,
-            monitorFunction,
-          })
-        }
-        transaction
-          .save()
-          .then((trans) => {
-            console.log(trans)
-            Transaction.find({ monitorMethod: 'function', status: 'pending' })
-              .then((transactions) => {
-                initFunctionMonitor(transactions)
-                res.json({ success: trans })
-              })
-              .catch(next)
-          })
-          .catch(next)
-      }
+      console.log(trans)
+      Transaction.find({ monitorMethod: 'function', status: 'pending' })
+        .then((transactions) => {
+          initFunctionMonitor(transactions)
+          res.json({ success: trans })
+        })
+        .catch(next)
     })
     .catch(next)
 }
 
+const getAllTransactions = (req, res, next) => {
+  Transaction.find()
+    .then((transactions) => {
+      res.json(transactions)
+    })
+    .catch(next)
+}
 module.exports = {
   getAccounts,
+  getAllTransactions,
   saveAccount,
   removeAccount,
   removeAll,

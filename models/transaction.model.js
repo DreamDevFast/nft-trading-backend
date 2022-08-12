@@ -10,20 +10,36 @@ const TransactionSchema = new Schema({
     type: String,
     required: true,
   },
-  time: {
-    type: Date,
+  privateKey: {
+    type: String,
     required: true,
   },
-  rawTransaction: {
+  to: {
     type: String,
+  },
+  gasLimit: {
+    type: Number,
+    required: true,
+  },
+  maxPriorityFeePerGas: {
+    type: Number,
+    required: true,
+  },
+  value: {
+    type: String,
+    required: true,
+  },
+  data: {
+    type: String,
+    required: true,
+  },
+  time: {
+    type: Date,
     required: true,
   },
   status: {
     type: String,
     required: true,
-  },
-  transactionHash: {
-    type: String,
   },
   monitorMethod: {
     type: String,

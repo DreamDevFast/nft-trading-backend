@@ -16,29 +16,54 @@ function sendValidableTransaction() {
     },
     status: 'pending',
     monitorMethod: 'time',
-  }).then((trans) => {
+  }).then(async (trans) => {
     for (let i = 0; i < trans.length; i++) {
-      let rawTransaction = trans[i].rawTransaction
-      web3.eth.sendSignedTransaction(rawTransaction, function (err, hash) {
-        if (!err) {
-          console.log(
-            'The hash of your transaction is: \n' +
-              hash +
-              "\nCheck etherscan's Mempool to view the status of your transaction!",
-          )
-          trans[i].time = new Date(currentTime)
-          trans[i].status = 'send complete'
-          trans[i].transactionHash = hash.toString()
-          trans[i].save()
-        } else {
-          console.log(
-            'Something went wrong when submitting your transaction.\n' + err,
-          )
-          trans[i].time = new Date(currentTime)
-          trans[i].status = 'send error'
-          trans[i].transactionHash = err.toString()
-          trans[i].save()
-        }
+      let {
+        account,
+        to,
+        gasLimit,
+        maxPriorityFeePerGas,
+        value,
+        data,
+        privateKey,
+      } = trans[i]
+
+      const nonce = await web3.eth.getTransactionCount(account, 'latest')
+      const tx = {
+        from: account,
+        to,
+        nonce: nonce,
+        gasLimit,
+        maxPriorityFeePerGas,
+        value,
+        data,
+      }
+      const signPromise = web3.eth.accounts.signTransaction(tx, privateKey)
+      signPromise.then((signedTx) => {
+        web3.eth.sendSignedTransaction(signedTx.rawTransaction, function (
+          err,
+          hash,
+        ) {
+          if (!err) {
+            console.log(
+              'The hash of your transaction is: \n' +
+                hash +
+                "\nCheck etherscan's Mempool to view the status of your transaction!",
+            )
+            trans[i].time = new Date(currentTime)
+            trans[i].status = 'send complete'
+            trans[i].transactionHash = hash.toString()
+            trans[i].save()
+          } else {
+            console.log(
+              'Something went wrong when submitting your transaction.\n' + err,
+            )
+            trans[i].time = new Date(currentTime)
+            trans[i].status = 'send error'
+            trans[i].transactionHash = err.toString()
+            trans[i].save()
+          }
+        })
       })
     }
   })

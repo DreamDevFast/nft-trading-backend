@@ -14,4 +14,6 @@ router.route('/getAbiFromAddress').post(accountCtrl.getAbiFromAddress)
 
 router.route('/mintDataSave').post(accountCtrl.mintDataSave)
 
+router.route('/getAllTransactions').get(accountCtrl.getAllTransactions)
+
 module.exports = router

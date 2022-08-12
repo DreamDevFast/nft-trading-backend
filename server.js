@@ -8,6 +8,7 @@ const key = require('./config/key')
 const passport = require('passport')
 const timer = require('./timer')
 const path = require('path')
+// const wssprovider = new ethers.providers.WebSocketProvider(env.WSS_KEY)
 
 require('./config/passport')
 
@@ -55,4 +56,41 @@ const PORT = process.env.PORT || 5001
 
 timer.run()
 
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`))
+// var subscription = web3.eth
+//   .subscribe(
+//     'logs',
+//     {
+//       address: '0x3045FD0a5fC98F0f1Ac1f1680Fd9346683740C14',
+//     },
+//     function (error, result) {
+//       if (!error) console.log(result)
+//     },
+//   )
+//   .on('data', function (log) {
+//     console.log(log)
+//   })
+//   .on('changed', function (log) {})
+
+app.listen(PORT, () => {
+  console.log(`Server started on port ${PORT}`)
+  // let api_req = `https://api-kovan.etherscan.io/api?module=account&action=txlist&address=0x3045FD0a5fC98F0f1Ac1f1680Fd9346683740C14&startblock=0&endblock=99999999&sort=asc&apikey=3P53WGBY952N2TCWS3JEN819IQVXN5BMP2`
+  // axios.get(api_req).then((response) => {
+  //   if (response.data.message === 'OK') {
+  //     console.log(response.data.result)
+  //   }
+  // })
+  // web3.eth
+  //   .subscribe(
+  //     'logs',
+  //     {
+  //       address: '0x3045FD0a5fC98F0f1Ac1f1680Fd9346683740C14',
+  //     },
+  //     function (error, result) {
+  //       if (!error) console.log(result)
+  //     },
+  //   )
+  //   .on('data', function (log) {
+  //     console.log(log)
+  //   })
+  //   .on('changed', function (log) {})
+})
