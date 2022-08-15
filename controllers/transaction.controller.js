@@ -1,8 +1,12 @@
 const Transaction = require('../models/transaction.model')
+const mongoose = require('mongoose')
 const { setFlag } = require('../functionMonitor')
 
 const getAllTransactions = (req, res, next) => {
-  Transaction.find()
+  let userId = mongoose.Types.ObjectId(req.body.userId)
+  Transaction.find({
+    userId,
+  })
     .then((transactions) => res.json(transactions))
     .catch(next)
 }
