@@ -37,6 +37,11 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(passport.initialize())
 
+app.get('/', function (req, res) {
+  res.sendFile(__dirname + '/build/index.html')
+  // console.log(__dirname)
+  // res.send('Hi')
+})
 // Implement route
 app.use('/admin/auth', adminAuthRouter)
 app.use('/admin/account', adminAccountRouter)
