@@ -2,6 +2,10 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
 const TransactionSchema = new Schema({
+  taskName: {
+    type: String,
+    default: 'No Name',
+  },
   userId: {
     type: Schema.Types.ObjectId,
     required: true,

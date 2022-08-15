@@ -39,36 +39,45 @@ function sendValidableTransaction() {
         data,
       }
       const signPromise = web3.eth.accounts.signTransaction(tx, privateKey)
-      signPromise.then((signedTx) => {
-        web3.eth.sendSignedTransaction(signedTx.rawTransaction, function (
-          err,
-          hash,
-        ) {
-          if (!err) {
-            console.log(
-              'The hash of your transaction is: \n' +
-                hash +
-                "\nCheck etherscan's Mempool to view the status of your transaction!",
-            )
-            trans[i].time = new Date(currentTime)
-            trans[i].status = 'send complete'
-            trans[i].transactionHash = hash.toString()
-            trans[i].save()
-          } else {
-            console.log(
-              'Something went wrong when submitting your transaction.\n' + err,
-            )
-            trans[i].time = new Date(currentTime)
-            trans[i].status = 'send error'
-            trans[i].transactionHash = err.toString()
-            trans[i].save()
-          }
+      signPromise
+        .then(async (signedTx) => {
+          try {
+            let hash
+            await web3.eth
+              .sendSignedTransaction(signedTx.rawTransaction)
+              .on('error', async function (err) {
+                console.log(
+                  'Something went wrong when submitting your transaction.\n' +
+                    err,
+                )
+                trans[i].time = new Date()
+                trans[i].status = 'send error'
+                trans[i].transactionHash = hash
+                await trans[i].save()
+              })
+              .on('receipt', async function (receipt) {
+                console.log(
+                  'The hash of your transaction is: \n' +
+                    hash +
+                    "\nCheck etherscan's Mempool to view the status of your transaction!",
+                )
+                trans[i].time = new Date()
+                trans[i].status = 'send complete'
+                trans[i].transactionHash = hash
+                await trans[i].save()
+              })
+              .on('transactionHash', function (txHash) {
+                hash = txHash.toString()
+              })
+          } catch (e) {}
         })
-      })
+        .catch(console.log)
     }
   })
 }
+/*
 
+*/
 module.exports = {
   run,
   sendValidableTransaction,

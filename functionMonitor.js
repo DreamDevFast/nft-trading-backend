@@ -4,8 +4,16 @@ const env = require('./env')
 const web3 = new Web3(new Web3.providers.HttpProvider(env.API_KEY))
 const abiDecoder = require('abi-decoder')
 const axios = require('axios')
+const Transaction = require('./models/transaction.model')
 
-const initFunctionMonitor = async (transactions) => {
+let flag = true
+let nonces = []
+let newNonces
+
+const setFlag = () => {
+  flag = true
+}
+const initFunctionMonitor = async () => {
   // wssprovider.on('pending', (tx) => {
   //   wssprovider.getTransaction(tx).then(function (transaction) {
   //     if (transaction) {
@@ -14,14 +22,25 @@ const initFunctionMonitor = async (transactions) => {
   //     }
   //   })
   // })
-  let nonces = Array(transactions.length)
-  for (let i = 0; i < transactions.length; i++) {
-    nonces[i] = 0
-  }
-  for (; transactions.length; ) {
-    console.log('Hello')
-    let catchedTransNumbers = []
+  try {
+    const transactions = await Transaction.find({
+      status: 'pending',
+      monitorMethod: 'function',
+    })
 
+    newNonces = Array(transactions.length)
+    for (let i = 0; i < transactions.length; i++) {
+      let matchedNumber = nonces.findIndex(
+        (nonce) => nonce.transId === transactions[i]._id.toString(),
+      )
+      console.log(matchedNumber)
+      if (matchedNumber > -1) {
+        newNonces[i] = nonces[matchedNumber]
+      } else {
+        newNonces[i] = { transId: transactions[i]._id.toString(), value: 0 }
+      }
+    }
+    nonces = newNonces
     await new Promise(async (resolve, reject) => {
       let agreeToResolve = 0
       let target = transactions.length
@@ -60,61 +79,79 @@ const initFunctionMonitor = async (transactions) => {
               let result = response.data.result
               console.log('ok')
               // console.log(result)
-              if (nonces[i] === 0) {
+              if (nonces[i].value === 0) {
                 let endTx = result.pop()
-                nonces[i] = endTx.nonce
+                nonces[i].value = endTx.nonce
                 agreeToResolve++
                 if (agreeToResolve === target) resolve()
               } else {
                 let endTx = result.pop()
-                if (nonces[i] !== endTx.nonce) {
-                  nonces[i] = endTx.nonce
-                  console.log(endTx)
+                if (nonces[i].value !== endTx.nonce) {
+                  nonces[i].value = endTx.nonce
                   console.log(trans.monitorFunction)
                   if (endTx.functionName.includes(trans.monitorFunction)) {
                     try {
-                      web3.eth.sendSignedTransaction(
-                        signedTx.rawTransaction,
-                        async function (err, hash) {
-                          if (!err) {
-                            console.log(
-                              'The hash of your transaction is: \n' +
-                                hash +
-                                "\nCheck etherscan's Mempool to view the status of your transaction!",
-                            )
-                            trans.time = new Date()
-                            trans.status = 'send complete'
-                            trans.transactionHash = hash.toString()
-                            await trans.save()
-                            transactions = transactions.filter(
-                              (tx) => tx._id !== trans._id,
-                            )
-                            nonces = nonces.filter(
-                              (nonce, index) => index !== i,
-                            )
-                            agreeToResolve++
-                            if (agreeToResolve === target) resolve()
-                          } else {
-                            console.log(
-                              'Something went wrong when submitting your transaction.\n' +
-                                err,
-                            )
-                            trans.time = new Date()
-                            trans.status = 'send error'
-                            trans.transactionHash = err.toString()
-                            await trans.save()
-                            transactions = transactions.filter(
-                              (tx) => tx._id !== trans._id,
-                            )
-                            nonces = nonces.filter(
-                              (nonce, index) => index !== i,
-                            )
-                            agreeToResolve++
-                            if (agreeToResolve === target) resolve()
-                          }
-                          catchedTransNumbers.push(i)
-                        },
-                      )
+                      let hash
+                      await web3.eth
+                        .sendSignedTransaction(signedTx.rawTransaction)
+                        .on('error', async function (err) {
+                          console.log('error', err, hash)
+                          console.log(
+                            'Something went wrong when submitting your transaction.\n' +
+                              err,
+                          )
+                          trans.time = new Date()
+                          trans.status = 'send error'
+                          trans.transactionHash = hash
+                          await trans.save()
+                          agreeToResolve++
+                          if (agreeToResolve === target) resolve()
+                        })
+                        .on('receipt', async function (receipt) {
+                          console.log(
+                            'The hash of your transaction is: \n' +
+                              hash +
+                              "\nCheck etherscan's Mempool to view the status of your transaction!",
+                          )
+                          trans.time = new Date()
+                          trans.status = 'send complete'
+                          trans.transactionHash = hash
+                          await trans.save()
+                          agreeToResolve++
+                          if (agreeToResolve === target) resolve()
+                        })
+                        .on('transactionHash', function (txHash) {
+                          hash = txHash.toString()
+                        })
+
+                      //   async function (err, hash) {
+                      //     if (!err) {
+                      //       console.log(
+                      //         'The hash of your transaction is: \n' +
+                      //           hash +
+                      //           "\nCheck etherscan's Mempool to view the status of your transaction!",
+                      //       )
+                      //       trans.time = new Date()
+                      //       trans.status = 'send complete'
+                      //       trans.transactionHash = hash.toString()
+                      //       await trans.save()
+                      //       agreeToResolve++
+                      //       if (agreeToResolve === target) resolve()
+                      //     } else {
+                      //       console.log(
+                      //         'Something went wrong when submitting your transaction.\n' +
+                      //           err,
+                      //       )
+                      //       trans.time = new Date()
+                      //       trans.status = 'send error'
+                      //       trans.transactionHash = err.toString()
+                      //       await trans.save()
+                      //       agreeToResolve++
+                      //       if (agreeToResolve === target) resolve()
+                      //     }
+                      //     catchedTransNumbers.push(i)
+                      //   },
+                      // )
                     } catch (e) {
                       console.log(e)
                     }
@@ -144,12 +181,9 @@ const initFunctionMonitor = async (transactions) => {
         }
       }
     })
-    transactions = transactions.filter(
-      (tx, index) => !catchedTransNumbers.includes(index),
-    )
-    nonces = nonces.filter(
-      (nonce, index) => !catchedTransNumbers.includes(index),
-    )
+    flag = true
+  } catch (e) {
+    console.log(e)
   }
   // wssprovider.on('pending', async (tx) => {
   //   wssprovider
@@ -227,6 +261,17 @@ const initFunctionMonitor = async (transactions) => {
   // })
 }
 
+const run = () => {
+  setInterval(() => {
+    if (flag) {
+      initFunctionMonitor()
+      flag = false
+    }
+  }, 2 * 1000)
+}
+
 module.exports = {
   initFunctionMonitor,
+  run,
+  setFlag,
 }

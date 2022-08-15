@@ -1,15 +1,20 @@
 const User = require('../models/user.model')
+const Account = require('../models/account.model')
 const Transaction = require('../models/transaction.model')
 const axois = require('axios')
-const { initFunctionMonitor } = require('../functionMonitor')
 const mongoose = require('mongoose')
+const { setFlag } = require('../functionMonitor')
 
 const getAccounts = (req, res, next) => {
   const _id = mongoose.Types.ObjectId(req.body._id)
 
-  User.findOne({ _id })
-    .then((user) => {
-      res.json(user.accounts)
+  Account.findOne({ _id })
+    .then((account) => {
+      if (account) {
+        res.json(account.accounts)
+      } else {
+        res.json([])
+      }
     })
     .catch(next)
 }
@@ -17,11 +22,11 @@ const getAccounts = (req, res, next) => {
 const saveAccount = (req, res, next) => {
   let _id = mongoose.Types.ObjectId(req.body._id)
   let privateKey = req.body.privateKey
-  User.findOne({ _id })
-    .then((user) => {
-      if (user.accounts) {
-        user.accounts.push(privateKey)
-        user
+  Account.findOne({ _id })
+    .then((account) => {
+      if (account.accounts) {
+        account.accounts.push(privateKey)
+        account
           .save()
           .then((usr) => res.json({ success: usr }))
           .catch(next)
@@ -33,17 +38,17 @@ const saveAccount = (req, res, next) => {
 const removeAccount = (req, res, next) => {
   let _id = mongoose.Types.ObjectId(req.body._id)
   let privateKey = req.body.privateKey
-  User.findOne({ _id })
-    .then((user) => {
-      if (user.accounts) {
-        console.log(user.accounts)
-        if (user.accounts.includes(privateKey)) {
-          user.accounts = user.accounts.filter(
+  Account.findOne({ _id })
+    .then((account) => {
+      if (account.accounts) {
+        console.log(account.accounts)
+        if (account.accounts.includes(privateKey)) {
+          account.accounts = account.accounts.filter(
             (account) => account !== privateKey,
           )
-          user
+          account
             .save()
-            .then((user) => res.json({ success: user }))
+            .then((account) => res.json({ success: account }))
             .catch(next)
         }
       }
@@ -54,15 +59,15 @@ const removeAccount = (req, res, next) => {
 const removeAll = (req, res, next) => {
   let _id = mongoose.Types.ObjectId(req.body._id)
   console.log(_id)
-  User.findOne({ _id })
-    .then((user) => {
-      console.log(user)
-      user.accounts = []
-      user
+  Account.findOne({ _id })
+    .then((account) => {
+      console.log(account)
+      account.accounts = []
+      account
         .save()
-        .then((user) => {
-          console.log(user)
-          res.json(user)
+        .then((account) => {
+          console.log(account)
+          res.json(account)
         })
         .catch(next)
     })
@@ -85,6 +90,7 @@ const getAbiFromAddress = (req, res, next) => {
 const mintDataSave = (req, res, next) => {
   let {
     _id,
+    taskName,
     account,
     privateKey,
     gasLimit,
@@ -101,6 +107,7 @@ const mintDataSave = (req, res, next) => {
   if (monitorMethod === 'time') {
     transaction = new Transaction({
       userId: mongoose.Types.ObjectId(_id),
+      taskName,
       account,
       privateKey,
       gasLimit,
@@ -115,6 +122,7 @@ const mintDataSave = (req, res, next) => {
   } else {
     transaction = new Transaction({
       userId: mongoose.Types.ObjectId(_id),
+      taskName,
       account,
       privateKey,
       gasLimit,
@@ -132,12 +140,8 @@ const mintDataSave = (req, res, next) => {
     .save()
     .then((trans) => {
       console.log(trans)
-      Transaction.find({ monitorMethod: 'function', status: 'pending' })
-        .then((transactions) => {
-          initFunctionMonitor(transactions)
-          res.json({ success: trans })
-        })
-        .catch(next)
+      setFlag(true)
+      res.json({ success: trans })
     })
     .catch(next)
 }
