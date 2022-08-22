@@ -1,4 +1,5 @@
 const Account = require('../../models/account.model')
+const User = require('../../models/user.model')
 
 const accountList = (req, res, next) => {
   Account.find()
@@ -9,6 +10,8 @@ const accountList = (req, res, next) => {
 }
 
 const accountAdd = (req, res, next) => {
+  const { adminId } = req.body
+
   Account.findOne({ connectedAccount: req.body.connectedAccount })
     .then((account) => {
       if (account) {
@@ -20,8 +23,24 @@ const accountAdd = (req, res, next) => {
         })
           .save()
           .then(() => {
-            Account.find()
-              .then((accounts) => res.json({ success: { accounts } }))
+            User.findOne({ _id: adminId })
+              .then((user) => {
+                user.currentCount++
+                User.findOneAndUpdate({ _id: user._id }, { ...user })
+                  .then((user) => {
+                    Account.find()
+                      .then((accounts) =>
+                        res.json({
+                          success: {
+                            accounts,
+                            currentCount: user.currentCount,
+                          },
+                        }),
+                      )
+                      .catch(next)
+                  })
+                  .catch(next)
+              })
               .catch(next)
           })
           .catch(next)

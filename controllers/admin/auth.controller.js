@@ -46,6 +46,8 @@ const login = (req, res, next) => {
                   username: user.username,
                   email: user.email,
                   role: user.role,
+                  currentCount: user.currentCount,
+                  maxCount: user.maxCount,
                 },
                 key.SECRET,
               )

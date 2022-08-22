@@ -25,6 +25,14 @@ const UserSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  currentCount: {
+    type: Number,
+    default: 0,
+  },
+  maxCount: {
+    type: Number,
+    default: 0,
+  },
 })
 /*
  * Statics
