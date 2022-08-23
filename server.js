@@ -54,7 +54,7 @@ app.use('/transaction', transactionRouter)
 // Implement 500 error route
 app.use(function (err, req, res, next) {
   console.log(err)
-  res.status(500).send('Something is broken.')
+  res.status(500).send('Something is broken.' + err.toString())
 })
 
 // Implement 404 error route
